@@ -14,7 +14,7 @@ const Footer = () => {
             <span className="icons-center">
               {currentYear} © TMG GLOBAL Admin Panel&nbsp;
               &nbsp;by&nbsp;
-              <a href={developedByLink} className="fw-bold footer-text" target="_blank" rel="noopener noreferrer">
+              {/* <a href={developedByLink} className="fw-bold footer-text" target="_blank" rel="noopener noreferrer">
 
               <img 
                 src={isDark ? '/next-logo.png' : '/next-logo-dark.png'}
@@ -28,10 +28,10 @@ const Footer = () => {
                   objectFit: 'contain'
                 }}
                 />
-                </a>
-              <a href={developedByLink} className="fw-bold footer-text" target="_blank" rel="noopener noreferrer">
+                </a> */}
+              <span className="fw-bold footer-text" target="_blank" rel="noopener noreferrer">
                 {developedBy}
-              </a>
+              </span>
             </span>
           </Col>
         </Row>

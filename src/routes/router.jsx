@@ -9,6 +9,9 @@ import AdminLayout from '@/layouts/AdminLayout'
 import SignIn from '@/app/(other)/auth/sign-in/page'
 import 'react-toastify/dist/ReactToastify.css'
 
+const PackageDetails = lazy(() => import('@/app/(admin)/packages/PackageDetails'))
+const PackageList = lazy(() => import('@/app/(admin)/packages/PackageList'))
+const PackageForm = lazy(() => import('@/app/(admin)/packages/PackageForm'))
 const ProjectDetails = lazy(() => import('@/app/(admin)/projects/ProjectDetails'))
 const ProjectForm = lazy(() => import('@/app/(admin)/projects/ProjectForm'))
 const ProjectsList = lazy(() => import('@/app/(admin)/projects/ProjectsList'))
@@ -22,7 +25,7 @@ const EcommerceProductCreate = lazy(() => import('@/app/(admin)/ecommerce/produc
 const Settings = lazy(() => import('@/app/(admin)/settings/Page'))
 
 // const Pricing = lazy(() => import('@/app/(admin)/pages/pricing/page'))
-// const Cards = lazy(() => import('@/app/(admin)/ui/cards/page'))
+const Cards = lazy(() => import('@/app/(admin)/ui/cards/page'))
 // const Invoices = lazy(() => import('@/app/(admin)/invoices/page'))
 // import { appRoutes, authRoutes } from '@/routes/index'
 // import HeroSectionManagement from '@/app/(admin)/HeroSection/HeroSectionManagement';
@@ -155,6 +158,56 @@ const AppRouter = props => {
               </ProtectedRoute>
             }
           />
+                  <Route
+          path="/gallery"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Cards />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        /> 
+        <Route
+          path="/packages"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <PackageList />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/packages/add"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <PackageForm />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/packages/edit/:packageId"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <PackageForm />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/packages/:packageId"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <PackageDetails />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
         {/* <Route
           path="/newsletter/subscribers"
           element={

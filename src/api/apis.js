@@ -488,6 +488,9 @@ export const deleteGalleryImage = async (id) => {
 
     }
 }
+
+/* ------------------ Hero Section  ------------------ */
+
 export const getHeroSection = async () => {
     try {
         const response = await axiosInstance.get(`/herosection/get-herosection`)
@@ -677,6 +680,78 @@ export const deleteProject = async (id) => {
     return res.data;
   } catch (error) {
     console.error("❌ API Error (deleteProject):", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+//===== Packages =====//
+
+export const getPackages = async (params) => {
+  try {
+    const res = await axiosInstance.get("/packages", { params });
+    return res.data;
+  } catch (error) {
+    console.error(
+      "❌ API Error (getPackages):",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+
+export const getPackageById = async (id) => {
+  try {
+    const res = await axiosInstance.get(`/packages/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("❌ API Error (getPackageById):", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createPackage = async (data) => {
+  try {
+    const res = await axiosInstance.post(
+      "/packages/create-package",
+      data,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return res.data;
+  } catch (error) {
+    console.error(
+      "❌ API Error (createPackage):",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const updatePackage = async (id, data) => {
+  try {
+    const res = await axiosInstance.put(
+      `/packages/${id}`,
+      data,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return res.data;
+  } catch (error) {
+    console.error(
+      "❌ API Error (updatePackage):",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+
+export const deletePackage = async (id) => {
+  try {
+    const res = await axiosInstance.delete(`/packages/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("❌ API Error (deletePackage):", error.response?.data || error.message);
     throw error;
   }
 };

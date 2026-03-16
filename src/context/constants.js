@@ -1,7 +1,7 @@
 export const currency = '$';
 export const currentYear = new Date().getFullYear();
-export const developedByLink = 'https://nextmedia.ae/';
-export const developedBy = 'Next Media';
+export const developedByLink = '';
+export const developedBy = 'Befirst Media';
 export const contactUs = 'info.nextdms@gmail.com';
 export const buyLink = '';
 export const basePath = '';

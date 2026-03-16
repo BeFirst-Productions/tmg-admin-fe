@@ -66,9 +66,9 @@ export const MENU_ITEMS = [
   //   icon: 'mdi:message-text-outline',
   //   label: 'Enquiry',
   //   url: '/enquiry',
-    // parentKey: 'enquiry'
-    // },
-    // ]
+  // parentKey: 'enquiry'
+  // },
+  // ]
   // },
 
   {
@@ -86,9 +86,9 @@ export const MENU_ITEMS = [
   //   icon: 'mdi:home-outline',
   //   label: 'Herosection',
   //   url: '/herosection',
-    //     parentKey: 'blogs'
-    //   }
-    // ]
+  //     parentKey: 'blogs'
+  //   }
+  // ]
   // },
   {
     key: 'blogs',
@@ -111,12 +111,12 @@ export const MENU_ITEMS = [
   //   label: 'Faqs',
   //   url: '/faqs',
   // },
-  // {
-  //   key: 'gallery',
-  //   icon: 'mdi:image',
-  //   label: 'Gallery',
-  //   url: '/gallery',
-  // },
+  {
+    key: 'gallery',
+    icon: 'mdi:image',
+    label: 'Gallery',
+    url: '/gallery',
+  },
   // {
   //   key: 'newsletter',
   //   icon: 'mdi:email-newsletter',
@@ -124,12 +124,12 @@ export const MENU_ITEMS = [
   //   url: '/newsletter/subscribers',
   // },
 
-  // {
-  //   key: 'page-packages',
-  //   icon: 'iconamoon:box-bold',
-  //   label: 'Packages',
-  //   url: '/packages',
-  // },
+  {
+    key: 'page-packages',
+    icon: 'iconamoon:box-bold',
+    label: 'Packages',
+    url: '/packages',
+  },
   // {
   //   key: 'page-packages',
   //   icon: 'iconamoon:box-bold',
