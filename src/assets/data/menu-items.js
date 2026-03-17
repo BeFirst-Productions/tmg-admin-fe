@@ -1,28 +1,28 @@
 export const MENU_ITEMS = [
-  // {
-  //   key: 'general',
-  //   label: 'INSIGHTS',
-  //   isTitle: true,
-  // },
+  {
+    key: 'general',
+    label: 'INSIGHTS',
+    isTitle: true,
+  },
   // {
   //   key: 'dashboards',
   //   icon: 'iconamoon:home-duotone',
   //   label: 'Dashboards',
   //   children: [
-  // {
-  //   key: 'dashboard',
-  //   icon: 'iconamoon:apps-bold',
-  //   label: 'Dashboard',
-  //   url: '/',
+  {
+    key: 'dashboard',
+    icon: 'iconamoon:apps-bold',
+    label: 'Dashboard',
+    url: '/',
     // parentKey: 'dashboards',
-  // },
-  // {
-  //   key: 'dashboard-analytics',
-  //   icon: 'carbon:analytics',
-  //   label: 'Analytics',
-  //   url: '/analytics',
+  },
+  {
+    key: 'dashboard-analytics',
+    icon: 'carbon:analytics',
+    label: 'Analytics',
+    url: '/analytics',
     // parentKey: 'dashboards',
-  // },
+  },
   //     {
   //       key: 'dashboard-finance',
   //       label: 'Finance',

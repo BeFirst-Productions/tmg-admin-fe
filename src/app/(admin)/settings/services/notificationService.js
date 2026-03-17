@@ -16,7 +16,7 @@ class NotificationService {
     }
 
     // Connect to your backend Socket.IO server
-    this.socket = io(process.env.VITE_API_URL || 'https://adl-admin-be.onrender.com', {
+    this.socket = io(process.env.VITE_API_URL || 'https://api.tmgdubai.ae/api/v1/admin', {
       auth: {
         userId,
         token: localStorage.getItem('authToken'),

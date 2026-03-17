@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from "@/api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { signIn } from "@/api/apis";
+import { setAccessToken as setTokenSingleton } from "@/api/tokenService";
 
 const AuthContext = createContext(null);
 
@@ -15,11 +16,16 @@ export const AuthProvider = ({ children }) => {
     const refresh = async () => {
       try {
         const res = await axiosInstance.post("/auth/refresh");
-        setAccessToken(res.data.accessToken);
+        const token = res.data.accessToken;
+        setAccessToken(token);
+        setTokenSingleton(token);
+        localStorage.setItem('authToken', token);
         setUser(res.data.user);
       } catch (err) {
         setUser(null);
         setAccessToken(null);
+        setTokenSingleton(null);
+        localStorage.removeItem('authToken');
       } finally {
         setLoading(false);
       }
@@ -32,7 +38,10 @@ export const AuthProvider = ({ children }) => {
   const logIn = async (userData) => {
   try {
       const res = await signIn(userData);
-    setAccessToken(res.accessToken);
+      const token = res.accessToken;
+    setAccessToken(token);
+    setTokenSingleton(token);
+    localStorage.setItem('authToken', token);
     setUser(res.user);
     navigate("/")
 

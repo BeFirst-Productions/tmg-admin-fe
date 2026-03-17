@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Card, CardBody, CardTitle, Col, Row } from 'react-bootstrap'
+import { Button, Card, CardBody, CardTitle, Col, Row, Spinner } from 'react-bootstrap'
+import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ReactApexChart from 'react-apexcharts'
 import { getPerformance, getPerformanceTrend, downloadAnalyticsCsv, getActiveUsersByDevice } from '@/api/apis'
 
@@ -15,14 +16,26 @@ const compactFormatter = new Intl.NumberFormat('en', { notation: 'compact', maxi
 const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUsers', metricLeftName = 'Impressions', metricRightName = 'Clicks' }) => {
   const [selectedRange, setSelectedRange] = useState('7d')
   const [loading, setLoading] = useState(false)
-  const [trend, setTrend] = useState([]) 
-  const [chartSeries, setChartSeries] = useState([
-    { name: metricLeftName, type: 'bar', data: [] },
-    { name: metricRightName, type: 'line', data: [] },
-  ])
+  
+  // ✅ Consolidate chart data to ensure sync between categories and series
+  const [chartData, setChartData] = useState({
+    categories: [],
+    series: [
+      { name: metricLeftName, type: 'bar', data: [] },
+      { name: metricRightName, type: 'line', data: [] },
+    ],
+  })
+  
   const [kpis, setKpis] = useState({ totalLeft: 0, totalRight: 0, ctr: null, avgPosition: null })
 
   // responsive chart height depending on viewport width
+  function getChartHeight() {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1200
+    if (w < 576) return 220
+    if (w < 992) return 300
+    return 360
+  }
+
   const [chartHeight, setChartHeight] = useState(getChartHeight())
   const [deviceData, setDeviceData] = useState({
     total: 0,
@@ -31,13 +44,6 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
   })
   const [deviceError, setDeviceError] = useState(null)
   const [deviceLoading, setDeviceLoading] = useState(false)
-
-  function getChartHeight() {
-    const w = typeof window !== 'undefined' ? window.innerWidth : 1200
-    if (w < 576) return 220
-    if (w < 992) return 300
-    return 360
-  }
 
   useEffect(() => {
     function onResize() {
@@ -55,12 +61,8 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
     ;(async () => {
       try {
         const data = await getActiveUsersByDevice({ range: selectedRange })
-
         if (!mounted) return
-
         const devices = data?.devices || []
-
-        // Keep desktop & mobile order stable
         const desktop = devices.find((d) => d.device === 'desktop')?.users || 0
         const mobile = devices.find((d) => d.device === 'mobile')?.users || 0
 
@@ -71,47 +73,33 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
         })
 
         if (desktop === 0 && mobile === 0) {
-          setDeviceError('No device data available from Analytics.')
+          setDeviceError('No device data available.')
         }
       } catch (err) {
         console.error('Device analytics load failed:', err)
-        if (mounted) {
-          setDeviceError('Unable to load device analytics data.')
-          setDeviceData({
-            total: 0,
-            labels: ['Desktop', 'Mobile'],
-            series: [0, 0],
-          })
-        }
+        if (mounted) setDeviceError('Unable to load device data.')
       } finally {
         if (mounted) setDeviceLoading(false)
       }
     })()
-
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [selectedRange])
 
   const totalDeviceUsers = useMemo(() => {
     return (deviceData.series || []).reduce((sum, v) => sum + Number(v || 0), 0)
   }, [deviceData.series])
 
-  // helper: short X label for axis
   const shortX = (x) => {
     if (!x) return x
-    // 'YYYY-MM-DD' or 'YYYY-MM-DD HH:00'
     if (selectedRange === '24h') {
       const parts = x.split(' ')
-      return parts[1] ?? parts[0].slice(5) // show 'HH:00' or hour
+      return parts[1] ?? parts[0].slice(5)
     }
-    return x.slice(5) // 'MM-DD'
+    return x.slice(5)
   }
 
-  // tick amount rule (avoid congested x-axis)
   const tickAmount = useMemo(() => {
     const entry = RANGES.find((r) => r.key === selectedRange) || RANGES[1]
-    // reduce ticks for small width
     const w = typeof window !== 'undefined' ? window.innerWidth : 1200
     if (w < 576) return Math.max(2, Math.floor(entry.ticks * 0.35))
     if (w < 992) return Math.max(3, Math.floor(entry.ticks * 0.6))
@@ -125,11 +113,13 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
         height: chartHeight,
         type: 'line',
         toolbar: { show: false },
+        animations: { enabled: false },
       },
-      stroke: { curve: 'smooth', width: [0, 3] },
+      stroke: { curve: 'straight', width: [0, 3] },
       plotOptions: { bar: { columnWidth: '40%', borderRadius: 6 } },
       xaxis: {
-        categories: trend.map((p) => p.x),
+        type: 'category',
+        categories: chartData.categories,
         labels: {
           rotate: -45,
           formatter: (val) => shortX(val),
@@ -154,45 +144,27 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
       ],
       tooltip: {
         shared: true,
-        x: { formatter: (val) => val }, // full x displayed in tooltip
-        y: { formatter: (v) => Number(v).toLocaleString() },
+        x: { formatter: (val) => val },
+        y: { formatter: (v) => Number(v || 0).toLocaleString() },
       },
       legend: { show: true, horizontalAlign: 'center', offsetY: 8 },
       colors: ['#7f56da', '#22c55e'],
       grid: { strokeDashArray: 4, yaxis: { lines: { show: true } } },
       markers: { size: 3 },
-      responsive: [
-        {
-          breakpoint: 992,
-          options: {
-            chart: { height: Math.max(220, Math.floor(chartHeight * 0.85)) },
-            xaxis: { tickAmount: Math.max(3, Math.floor(tickAmount * 0.6)) },
-          },
-        },
-        {
-          breakpoint: 576,
-          options: {
-            chart: { height: Math.max(180, Math.floor(chartHeight * 0.6)) },
-            xaxis: { tickAmount: Math.max(2, Math.floor(tickAmount * 0.35)) },
-          },
-        },
-      ],
     }),
-    [trend, chartHeight, metricLeftName, metricRightName, tickAmount, selectedRange],
+    [chartData.categories, chartHeight, metricLeftName, metricRightName, tickAmount, selectedRange],
   )
 
-  // fetch and align series; rounding & sanitization avoids float noise
+  // fetch and align series
   useEffect(() => {
     let mounted = true
     ;(async () => {
       try {
         setLoading(true)
 
-        // aggregated KPIs (if available)
         const perfResp = await getPerformance(selectedRange).catch(() => null)
         const perfData = perfResp?.data ?? perfResp ?? null
 
-        // time-series (left & right metrics)
         const [leftResp, rightResp] = await Promise.all([
           getPerformanceTrend(selectedRange, metricLeft).catch(() => null),
           getPerformanceTrend(selectedRange, metricRight).catch(() => null),
@@ -201,12 +173,10 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
         const leftSeries = leftResp?.data?.series ?? leftResp?.series ?? []
         const rightSeries = rightResp?.data?.series ?? rightResp?.series ?? []
 
-        // prefer left timeline, else right, else generate timeline
         let timeline = []
         if (leftSeries.length) timeline = leftSeries.map((s) => s.x)
         else if (rightSeries.length) timeline = rightSeries.map((s) => s.x)
         else {
-          // fallback generation (daily/hours)
           const days = selectedRange === '24h' ? 24 : selectedRange === '7d' ? 7 : selectedRange === '28d' ? 28 : 90
           const now = new Date()
           if (selectedRange === '24h') {
@@ -222,34 +192,32 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
           }
         }
 
-        // build maps and sanitize numeric values (rounding)
-        const leftMap = new Map(leftSeries.map((s) => [s.x, Math.round(Number(s.y ?? s.value ?? 0))]))
-        const rightMap = new Map(rightSeries.map((s) => [s.x, Math.round(Number(s.y ?? s.value ?? 0))]))
+        const leftMap = new Map(leftSeries.map((s) => [s.x, Math.round(Number(s.y ?? s.value ?? s[metricLeft] ?? 0))]))
+        const rightMap = new Map(rightSeries.map((s) => [s.x, Math.round(Number(s.y ?? s.value ?? s[metricRight] ?? 0))]))
 
         const leftData = timeline.map((t) => leftMap.get(t) ?? 0)
         const rightData = timeline.map((t) => rightMap.get(t) ?? 0)
 
-        const combined = timeline.map((t, i) => ({ x: t, yLeft: leftData[i], yRight: rightData[i] }))
-
         if (!mounted) return
-        setTrend(combined)
-        setChartSeries([
-          { name: metricLeftName, type: 'bar', data: leftData },
-          { name: metricRightName, type: 'line', data: rightData },
-        ])
 
-        // KPIs: totals (rounded)
+        // ✅ Update both categories and series in ONE state call to prevent mismatch crash
+        setChartData({
+          categories: timeline,
+          series: [
+            { name: metricLeftName, type: 'bar', data: leftData },
+            { name: metricRightName, type: 'line', data: rightData },
+          ]
+        })
+
         const totalLeft = leftData.reduce((s, v) => s + (Number(v) || 0), 0)
         const totalRight = rightData.reduce((s, v) => s + (Number(v) || 0), 0)
 
-        // CTR if available in perfData (or compute if left=impressions and right=clicks)
         let ctr = null
         const metrics = perfData?.metrics ?? {}
         if (metrics?.ctr) ctr = metrics.ctr
         else {
           const ll = String(metricLeft).toLowerCase()
           const rr = String(metricRight).toLowerCase()
-          // best-effort compute CTR if metric names indicate impressions/clicks
           if ((ll.includes('impress') && rr.includes('click')) || (rr.includes('impress') && ll.includes('click'))) {
             if (ll.includes('impress')) ctr = totalRight > 0 && totalLeft > 0 ? (totalRight / totalLeft) * 100 : null
             else ctr = totalLeft > 0 && totalRight > 0 ? (totalLeft / totalRight) * 100 : null
@@ -269,9 +237,7 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
         if (mounted) setLoading(false)
       }
     })()
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [selectedRange, metricLeft, metricRight])
 
   const onExport = async () => {
@@ -432,8 +398,30 @@ const Conversions = ({ metricLeft = 'screenPageViews', metricRight = 'activeUser
                 </div> */}
               </div>
 
-              <div className="mt-3 flex-grow-1">
-                <ReactApexChart options={chartOptions} series={chartSeries} height={chartHeight} type="line" className="apex-charts" />
+              <div className="mt-3 flex-grow-1 d-flex flex-column">
+                {!loading && chartData.categories.length > 0 ? (
+                  <ReactApexChart 
+                    options={chartOptions} 
+                    series={chartData.series} 
+                    height={chartHeight} 
+                    type="line" 
+                    className="apex-charts" 
+                  />
+                ) : (
+                  <div className="flex-centered flex-grow-1" style={{ minHeight: 200 }}>
+                    {loading ? (
+                      <div className="text-center">
+                        <Spinner animation="border" variant="primary" className="mb-2" />
+                        <p className="text-muted small">Fetching analytics data...</p>
+                      </div>
+                    ) : (
+                      <div className="text-center text-muted">
+                        <IconifyIcon icon="bx:bar-chart-alt-2" className="fs-48 mb-2 opacity-25" />
+                        <p>No data available for this period</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </Col>

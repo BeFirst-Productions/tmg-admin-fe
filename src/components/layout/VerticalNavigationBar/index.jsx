@@ -18,13 +18,23 @@ const VerticalNavigationBar = () => {
     if (user?.role === "superadmin") return items;
 
     // ✅ If ADMIN → remove User Management
-   if (user?.role === "admin") {
-  return items.filter(
-    (item) =>
-      item.key !== "user-management" &&
-      item.key !== "herosection"
-  );
-}
+    if (user?.role === "admin") {
+      const filtered = items.filter(
+        (item) =>
+          item.key !== "user-management" &&
+          item.key !== "herosection"
+      );
+      
+      // ✅ Remove titles that don't have any links under them
+      return filtered.filter((item, index, array) => {
+        if (item.isTitle) {
+          const nextItem = array[index + 1];
+          // A title is valid only if it is followed by a non-title item
+          return nextItem && !nextItem.isTitle;
+        }
+        return true;
+      });
+    }
 
 
     // ✅ Default (safety)

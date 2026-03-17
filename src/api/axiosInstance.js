@@ -6,7 +6,7 @@ import { getAccessToken, setAccessToken, clearAccessToken } from "./tokenService
 // ===============================
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true, // ✅ REQUIRED for refresh cookie
+  withCredentials: true, 
   // headers: {
   //   "Content-Type": "application/json",
   // },
@@ -52,7 +52,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // ✅ DO NOT REFRESH ON AUTH ROUTES
+
     if (
       originalRequest.url.includes("/auth/login") ||
       originalRequest.url.includes("/auth/logout") ||

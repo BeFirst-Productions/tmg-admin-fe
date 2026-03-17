@@ -1,14 +1,29 @@
-import { useRef } from "react";
-import { Icon } from "@iconify/react";
+import { compressImage } from "@/utils/imageCompression";
+import { toast } from "react-toastify";
 
 const ImageUpload = ({ blogData, updateBlogData, error }) => {
   const fileInputRef = useRef();
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0] || null;
-    if (file) {
-      updateBlogData({ image: file });
+    if (!file) return;
+
+    let processedFile = file;
+
+    // Automatic compression for files > 1MB
+    if (file.size > 1024 * 1024) {
+      const toastId = toast.info("Blog image is large. Optimizing for web...", { autoClose: false });
+      try {
+        processedFile = await compressImage(file, { quality: 0.75, maxWidth: 1600 });
+        toast.dismiss(toastId);
+        toast.success(`Optimized: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(processedFile.size / 1024).toFixed(0)}KB`);
+      } catch (err) {
+        toast.dismiss(toastId);
+        console.error("Compression failed:", err);
+      }
     }
+
+    updateBlogData({ image: processedFile });
   };
 
   const removeImage = () => {
