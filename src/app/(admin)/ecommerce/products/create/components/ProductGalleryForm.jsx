@@ -1,3 +1,5 @@
+import React, { useRef } from "react";
+import IconifyIcon from "@/components/wrappers/IconifyIcon";
 import { compressImage } from "@/utils/imageCompression";
 import { toast } from "react-toastify";
 
@@ -44,7 +46,7 @@ const ImageUpload = ({ blogData, updateBlogData, error }) => {
           onClick={() => fileInputRef.current.click()}
           className={`upload-box ${error ? "border-danger" : ""}`}
         >
-          <Icon icon="bx:cloud-upload" width="48" height="48" className="upload-icon" />
+          <IconifyIcon icon="bx:cloud-upload" width="48" height="48" className="upload-icon" />
           <p className="upload-text">Drop file here or click to browse</p>
           <p className="upload-help">(Only one image allowed)</p>
 
@@ -61,7 +63,7 @@ const ImageUpload = ({ blogData, updateBlogData, error }) => {
       {previewImage && (
         <div className="preview-wrapper">
           <button className="remove-btn" onClick={removeImage}>
-            <Icon icon="mdi:close" width="20" height="20" />
+            <IconifyIcon icon="mdi:close" width="20" height="20" />
           </button>
 
           <img src={previewImage} alt="Preview" className="uploaded-image" />
